@@ -1,6 +1,7 @@
 import { Props, Key, Ref } from 'shared/ReactTypes';
 import { WorkTag } from './workTags';
 import { NoFlags, Flags } from './fiberFlags';
+import { Container } from 'react-dom';
 
 export class FiberNode {
     tag:WorkTag;
@@ -47,4 +48,47 @@ export class FiberNode {
         this.updateQueue = null; // 表示节点的更新队列
 
     }
+}
+
+export class FiberRootNode {
+    container:Container;
+    current:FiberNode;
+    finishedWork:FiberNode | null;
+
+    constructor(container:Container,hostRootFiber:FiberNode){
+        this.container = container;
+        this.current = hostRootFiber;
+        // 将根节点的 stateNode 属性指向 FiberRootNode，用于表示整个 React 应用的根节点
+        hostRootFiber.stateNode = this;
+        // 指向更新完成之后的 hostRootFiber
+        this.finishedWork = null;
+    }
+}
+
+// 根据 FiberRootNode.current 创建一个新的 workInProgress 节点
+export function createWorkInProgress(current:FiberNode,pendingProps:Props):FiberNode{
+    let workInProgress = current.alternate;
+    if (workInProgress === null) {
+        // mount 首屏渲染时 
+        workInProgress = new FiberNode(current.tag,pendingProps,current.key);
+        workInProgress.stateNode = current.stateNode
+
+        // 建立双向关联
+        workInProgress.alternate = current;
+        current.alternate = workInProgress;
+    }else{
+        // update 更新时
+        workInProgress.pendingProps = pendingProps;
+        // 将 effect 链表重置为空，以便在更新过程中记录新的副作用
+        workInProgress.flags = NoFlags;
+        workInProgress.subTreeFlags = NoFlags;
+    }
+    // 复制当前节点的大部分属性
+    workInProgress.type = current.type;
+    workInProgress.updateQueue = current.updateQueue;
+    workInProgress.child = current.child;
+    workInProgress.memoizedProps = current.memoizedProps;
+    workInProgress.memoizedState = current.memoizedState;
+
+    return workInProgress;
 }
