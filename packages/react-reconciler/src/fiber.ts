@@ -1,5 +1,5 @@
-import { Props, Key, Ref } from 'shared/ReactTypes';
-import { WorkTag } from './workTags';
+import { Props, Key, Ref, ReactElementType } from 'shared/ReactTypes';
+import { FunctionComponent, HostComponent, WorkTag } from './workTags';
 import { NoFlags, Flags } from './fiberFlags';
 import { Container } from 'react-dom';
 
@@ -91,4 +91,19 @@ export function createWorkInProgress(current:FiberNode,pendingProps:Props):Fiber
     workInProgress.memoizedState = current.memoizedState;
 
     return workInProgress;
+}
+
+// 根据 DOM 节点创建新的 Fiber 节点
+export function createFiberFromElement(element:ReactElementType):FiberNode{
+    const {type,key,props} = element;
+    let fiberTag:WorkTag = FunctionComponent;
+    if (typeof type === 'string') {
+        // 原生DOM节点
+        fiberTag = HostComponent; 
+    }else if(typeof type !== 'function' && __DEV__) {
+        console.warn('未定义的type类型',element); 
+    }
+    const fiber = new FiberNode(fiberTag,props,key);
+    fiber.type = type;
+    return fiber;
 }

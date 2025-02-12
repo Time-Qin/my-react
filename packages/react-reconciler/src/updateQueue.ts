@@ -34,8 +34,8 @@ export function enqueueUpdate<State>(updateQueue: UpdateQueue<State>, update: Up
 }
 
 // 消费UpdateQueue 中的Update
-export function precessUpdateQueue<State>(baseState: State, pendingUpdate: Update<State> | null): { memoizedState: State } {
-    const result: ReturnType<typeof precessUpdateQueue<State>> = {
+export function processUpdateQueue<State>(baseState: State, pendingUpdate: Update<State> | null): { memoizedState: State } {
+    const result: ReturnType<typeof processUpdateQueue<State>> = {
         memoizedState: baseState
     }
     if (pendingUpdate !== null) {
