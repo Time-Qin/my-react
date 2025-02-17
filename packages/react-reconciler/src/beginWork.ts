@@ -5,7 +5,7 @@ import { HostComponent, HostRoot, HostText } from './workTags';
 import { reconcileChildFibers, mountChildFibers } from './childFiber';
 
 // 比较并返回子 FiberNode
-export function beginWork(current: FiberNode | null, workInProgress: FiberNode) {
+export function beginWork(workInProgress: FiberNode) {
     switch (workInProgress.tag) {
         case HostRoot:
             return updateHostRoot(workInProgress);

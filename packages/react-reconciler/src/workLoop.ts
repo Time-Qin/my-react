@@ -2,6 +2,8 @@ import { createWorkInProgress, FiberNode, FiberRootNode } from './fiber';
 import { HostRoot } from './workTags';
 import { MutationMask, NoFlags } from './fiberFlags';
 import { commitMutationEffects } from './commitWork';
+import { beginWork } from './beginWork';
+import { completeWork } from './completeWork';
 
 let workInProgress: FiberNode | null = null;
 

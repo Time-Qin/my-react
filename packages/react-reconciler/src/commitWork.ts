@@ -1,4 +1,4 @@
-import { Container, appendChildToContainer, appendInitialChild } from 'hostConfig';
+import { Container, appendChildToContainer, appendInitialChild } from 'react-dom/src/hostConfig';
 import { FiberNode, FiberRootNode } from './fiber';
 import {
     ChildDeletion,

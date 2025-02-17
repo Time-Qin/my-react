@@ -6,7 +6,7 @@
 	"scripts": {
 		"test": "echo \"Error: no test specified\" && exit 1",
 		"lint": "eslint --ext .ts,.jsx,.tsx --fix --quiet ./packages",
-		"build-dev": "rimraf dist && rollup --config scripts/rollup/react.config.js --bundleConfigAsCjs",
+		"build-dev": "rimraf dist && rollup --config scripts/rollup/dev.config.js --bundleConfigAsCjs",
 		"demo": "vite serve demos/test-1 --config scripts/vite/vite.config.js --force"
 	},
 	"keywords": [],
@@ -15,6 +15,7 @@
 	"devDependencies": {
 		"@commitlint/cli": "^19.7.1",
 		"@commitlint/config-conventional": "^19.7.1",
+		"@rollup/plugin-alias": "^5.1.1",
 		"@rollup/plugin-commonjs": "^28.0.2",
 		"@rollup/plugin-replace": "^5.0.7",
 		"@types/react": "^18.2.56",
