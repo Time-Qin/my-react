@@ -5,7 +5,7 @@ import {
     createTextInstance
 } from 'react-dom/src/hostConfig';
 import { FiberNode } from './fiber';
-import { HostComponent, HostRoot, HostText } from './workTags';
+import { FunctionComponent, HostComponent, HostRoot, HostText } from './workTags';
 import { NoFlags } from './fiberFlags';
 
 // 生成更新计划，计算和收集更新 flags
@@ -14,6 +14,7 @@ export function completeWork(workInProgress: FiberNode) {
     const current = workInProgress.alternate;
     switch (workInProgress.tag) {
         case HostRoot:
+        case FunctionComponent:
             bubbleProperties(workInProgress);
             return null;
         case HostComponent:
@@ -77,10 +78,10 @@ function appendAllChildren(parent: Container, workInProgress: FiberNode) {
 }
 
 // 收集更新 flags，将子 FiberNode 的 flags 冒泡到父 FiberNode 上
-function bubbleProperties(workInProgress:FiberNode ){
+function bubbleProperties(workInProgress: FiberNode) {
     let subTreeFlags = NoFlags;
     let child = workInProgress.child;
-    while(child!== null){
+    while (child !== null) {
         subTreeFlags |= child.subTreeFlags;
         subTreeFlags |= child.flags;
 
