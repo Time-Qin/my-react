@@ -1,6 +1,6 @@
 import { Action } from 'shared/ReactTypes';
 import { Update } from './fiberFlags';
-import { Dispatch } from 'react/src/currentdispatcher';
+import { Dispatch } from 'react/src/currentDispatcher';
 
 // 定义Update 数据结构
 export interface Update<State> {

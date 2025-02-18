@@ -6,7 +6,7 @@ import {
 } from 'react-dom/src/hostConfig';
 import { FiberNode } from './fiber';
 import { FunctionComponent, HostComponent, HostRoot, HostText } from './workTags';
-import { NoFlags } from './fiberFlags';
+import { NoFlags, Update } from './fiberFlags';
 
 // 生成更新计划，计算和收集更新 flags
 export function completeWork(workInProgress: FiberNode) {
@@ -19,7 +19,7 @@ export function completeWork(workInProgress: FiberNode) {
             return null;
         case HostComponent:
             if (current !== null && workInProgress.stateNode !== null) {
-                // TODO:组件的更新阶段
+                updateHostComponent(current, workInProgress)
             } else {
                 // 首屏渲染阶段
                 // 1.构建DOM
@@ -32,7 +32,7 @@ export function completeWork(workInProgress: FiberNode) {
             return null;
         case HostText:
             if (current !== null && workInProgress.stateNode !== null) {
-                // TODO:组件的更新阶段	
+                updateHostText(current, workInProgress)
             } else {
                 // 首屏渲染阶段
                 // 1.构建DOM
@@ -89,4 +89,19 @@ function bubbleProperties(workInProgress: FiberNode) {
         child = child.sibling;
     }
     workInProgress.subTreeFlags |= subTreeFlags;
+}
+
+function updateHostComponent(current: FiberNode, workInProgress: FiberNode) {
+    markUpdate(workInProgress)
+}
+function updateHostText(current: FiberNode, workInProgress: FiberNode) {
+    const oldText = current.memoizedProps.content
+    const newText = workInProgress.pendingProps.content
+    if (oldText !== newText) {
+        markUpdate(workInProgress)
+    }
+}
+// 为 Fiber 节点增加 Update flags
+function markUpdate(workInProgress: FiberNode) {
+    workInProgress.flags |= Update;
 }

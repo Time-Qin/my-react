@@ -1,39 +1,89 @@
-import { ReactElementType } from 'shared/ReactTypes';
-import { FiberNode, createFiberFromElement } from './fiber';
+import { Props, ReactElementType } from 'shared/ReactTypes';
+import { FiberNode, createFiberFromElement, createWorkInProgress } from './fiber';
 import { REACT_ELEMENT_TYPE } from 'shared/ReactSymbols';
 import { HostText } from './workTags';
-import { Placement } from './fiberFlags';
+import { ChildDeletion, Placement } from './fiberFlags';
 
-function ChildReconciler(shouldTrackEffects: boolean) {
+function ChildReconciler(shouldTrackSideEffects: boolean) {
     // 处理单个 Element 节点的情况
-    // 对比 currentFiber 与 ReactElement
-    // 生成 workInProgress FiberNode
-    function reconcilerSingleElement(
-        returnFiber: FiberNode,
-        currentFiber: FiberNode | null,
-        element: ReactElementType
-    ) {
-        const fiber = createFiberFromElement(element);
-        fiber.return = returnFiber;
-        return fiber;
+    // 对比 currentFiber 与 ReactElement，生成 workInProgress FiberNode
+    function reconcilerSingleElement(returnFiber: FiberNode, currentFiber: FiberNode | null, element: ReactElementType) {
+        //组件更新阶段
+        if (currentFiber !== null) {
+            if (currentFiber.key == element.key) {
+                if (element.$$typeof === REACT_ELEMENT_TYPE) {
+                    if (currentFiber.type === element.type) {
+                        // key 和 type 都相同，复用旧的 Fiber 节点
+                        const existing = useFiber(currentFiber, element.props)
+                        existing.return = currentFiber
+                        return existing
+                    }
+                    // key 相同，但 type 不同，删除旧的 Fiber 节点
+                    deleteChild(returnFiber, currentFiber)
+                } else {
+                    if (__DEV__) {
+                        console.warn('还未实现的 React 类型', element);
+                    }
+                }
+            } else {
+                // key 相同，但 type 不同，删除旧的 Fiber 节点
+                deleteChild(returnFiber, currentFiber)
+            }
+        }
+        // 创建新的 Fiber 节点
+        const fiber = createFiberFromElement(element)
+        fiber.return = returnFiber
+        return fiber
     }
 
+
     // 处理文本节点的情况
-    // 对比 currentFiber 与 ReactElement
-    // 生成 workInProgress FiberNode
-    function reconcilerSingleTextNode(
-        returnFiber: FiberNode,
-        currentFiber: FiberNode | null,
-        content: string | number
-    ) {
-        const fiber = new FiberNode(HostText, { content }, null);
-        fiber.return = returnFiber;
-        return fiber;
+    // 对比 currentFiber 与 ReactElement，生成 workInProgress FiberNode
+    function reconcilerSingleTextNode(returnFiber: FiberNode, currentFiber: FiberNode | null, content: string | number) {
+        if (currentFiber !== null) {
+            // 组件的更新阶段
+            if (currentFiber.tag === HostText) {
+                // 复用旧的 Fiber 节点
+                const existing = useFiber(currentFiber, { content })
+                existing.return = currentFiber
+                return existing
+            } else {
+                // 删除旧的 Fiber 节点
+                deleteChild(returnFiber, currentFiber)
+            }
+        }
+        // 创建新的 Fiber 节点
+        const fiber = new FiberNode(HostText, { content }, null)
+        fiber.return = returnFiber
+        return fiber
+    }
+
+    // 复用 Fiber 节点
+    function useFiber(fiber: FiberNode, pendingProps: Props) {
+        const clone = createWorkInProgress(fiber, pendingProps)
+        clone.index = 0;
+        clone.sibling = null;
+        return clone
+    }
+
+    // 从父节点中删除指定的子节点
+    function deleteChild(returnFiber: FiberNode, childToDelete: FiberNode) {
+        if (!shouldTrackSideEffects) {
+            return
+        }
+        const deletions = returnFiber.deletions
+        if (deletions == null) {
+            returnFiber.deletions = [childToDelete]
+            returnFiber.flags |= ChildDeletion
+        } else {
+            deletions.push(childToDelete)
+        }
+
     }
 
     // 为 Fiber 节点添加更新 flags
     function placeSingleChild(fiber: FiberNode) {
-        if (shouldTrackEffects && fiber.alternate === null) {
+        if (shouldTrackSideEffects && fiber.alternate === null) {
             fiber.flags |= Placement;
         }
         return fiber;

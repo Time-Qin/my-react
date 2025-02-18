@@ -48,9 +48,9 @@ function updateHostComponent(workInProgress: FiberNode) {
     return workInProgress.child;
 }
 
-function updateFunctionComponent(workInProgress:FiberNode){
+function updateFunctionComponent(workInProgress: FiberNode) {
     const nextChildren = renderWithHooks(workInProgress)
-    reconcileChildren(workInProgress,nextChildren)
+    reconcileChildren(workInProgress, nextChildren)
     return workInProgress.child
 }
 
