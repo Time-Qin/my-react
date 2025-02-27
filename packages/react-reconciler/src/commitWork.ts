@@ -123,20 +123,16 @@ function commitDeteion(childToDelete: FiberNode) {
         console.log('执行 Deletion 操作', childToDelete);
     }
     // 子树的根节点
-    let rootHostNode: FiberNode | null = null
+    let rootChildrenToDelete: FiberNode[] = []
 
     commitNestedUnmounts(childToDelete, (unmountFiber) => {
         switch (unmountFiber.flags) {
             case HostComponent:
-                if (rootHostNode === null) {
-                    rootHostNode = unmountFiber;
-                }
+                recordChildrenToDelete(rootChildrenToDelete, unmountFiber);
                 //TODO 解绑ref
                 return;
             case HostText:
-                if (rootHostNode === null) {
-                    rootHostNode = unmountFiber;
-                }
+                recordChildrenToDelete(rootChildrenToDelete, unmountFiber);
                 return;
             case FunctionComponent:
                 //TODO useEffect unmount
@@ -149,13 +145,30 @@ function commitDeteion(childToDelete: FiberNode) {
     });
 
     // 移除rootHostNode 的DOM
-    if (rootHostNode !== null) {
+    if (rootChildrenToDelete.length !== 0) {
         // 找到待删除子树的根节点的 parent DOM
-        const hostParent = getHostParent(rootHostNode) as Container
-        removeChild((rootHostNode as FiberNode).stateNode, hostParent)
+        const hostParent = getHostParent(childToDelete) as Container
+        rootChildrenToDelete.forEach((node) => {
+            removeChild(node.stateNode, hostParent)
+        });
     }
     childToDelete.return = null
     childToDelete.child = null
+}
+
+function recordChildrenToDelete(childrenToDelete: FiberNode[], unmountFiber: FiberNode) {
+    const lastOne = childrenToDelete[childrenToDelete.length - 1];
+    if (!lastOne) {
+        childrenToDelete.push(unmountFiber)
+    } else {
+        let node = lastOne.sibling;
+        while (node !== null) {
+            if (unmountFiber == node) {
+                childrenToDelete.push(unmountFiber)
+            }
+            node = node.sibling;
+        }
+    }
 }
 
 // 深度优先遍历 Fiber 树，执行 onCommitUnmount
@@ -216,3 +229,4 @@ function getHostSibling(fiber: FiberNode) {
         }
     }
 }
+

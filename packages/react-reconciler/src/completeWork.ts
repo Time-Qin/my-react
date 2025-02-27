@@ -5,7 +5,7 @@ import {
     createTextInstance
 } from 'react-dom/src/hostConfig';
 import { FiberNode } from './fiber';
-import { FunctionComponent, HostComponent, HostRoot, HostText } from './workTags';
+import { Fragment, FunctionComponent, HostComponent, HostRoot, HostText } from './workTags';
 import { NoFlags, Update } from './fiberFlags';
 
 // 生成更新计划，计算和收集更新 flags
@@ -28,6 +28,9 @@ export function completeWork(workInProgress: FiberNode) {
                 appendAllChildren(instance, workInProgress);
                 workInProgress.stateNode = instance;
             }
+            bubbleProperties(workInProgress);
+            return null;
+        case Fragment:
             bubbleProperties(workInProgress);
             return null;
         case HostText:
