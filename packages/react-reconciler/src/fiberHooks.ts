@@ -4,6 +4,7 @@ import internals from "shared/internals";
 import { createUpdate, createUpdateQueue, enqueueUpdate, processUpdateQueue, UpdateQueue } from "./updateQueue";
 import { Action } from "shared/ReactTypes";
 import { scheduleUpdateOnFiber } from "./workLoop";
+import { Lane, NoLane, requestUpdateLane } from "./fiberLanes";
 
 // 定义 Hook 数据结构
 export interface Hook {
@@ -15,13 +16,16 @@ export interface Hook {
 let currentlyRenderingFiber: FiberNode | null = null;
 let workInProgressHook: Hook | null = null;
 let currentHook: Hook | null = null;
+let renderLane: Lane = NoLane;
 
 const { currentDispatcher } = internals
 
 // 执行组件中的函数
-export default function renderWithHooks(workInProgress: FiberNode) {
+export default function renderWithHooks(workInProgress: FiberNode,lane: Lane) {
     //赋值
     currentlyRenderingFiber = workInProgress;
+    renderLane = lane;
+    //重置
     workInProgress.memoizedState = null;
 
     //判断Hooks 被调用的时机
@@ -43,7 +47,7 @@ export default function renderWithHooks(workInProgress: FiberNode) {
     // 重置
     currentlyRenderingFiber = null;
     workInProgressHook = null;
-
+    renderLane = NoLane;
     return child;
 }
 
@@ -88,9 +92,10 @@ function updateState<State>(initialState: (() => State) | State): [State, Dispat
     // 计算新 state 的逻辑
     const queue = hook.queue as UpdateQueue<State>;
     const pending = queue.shared.pending
+    queue.shared.pending = null
 
     if (pending !== null) {
-        const { memoizedState } = processUpdateQueue(hook.memoizedState, pending)
+        const { memoizedState } = processUpdateQueue(hook.memoizedState, pending,renderLane)
         hook.memoizedState = memoizedState;
     }
     return [hook.memoizedState, queue.dispatch as Dispatch<State>]
@@ -147,10 +152,11 @@ function updateWorkInProgressHook(): Hook {
 
 // 用于触发状态更新的逻辑
 function dispatchSetState<State>(fiber: FiberNode, updateQueue: UpdateQueue<State>, queue: Action<State>) {
-    const update = createUpdate(queue);
+    const lane = requestUpdateLane();
+    const update = createUpdate(queue,lane);
     enqueueUpdate(updateQueue, update);
     // 调度更新
-    scheduleUpdateOnFiber(fiber)
+    scheduleUpdateOnFiber(fiber,lane)
 }
 
 

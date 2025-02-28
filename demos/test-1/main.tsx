@@ -1,5 +1,5 @@
-import React from 'react'
-import ReactDOM from 'react-dom'
+import React, { useState } from 'react'
+import ReactDOM from 'react-dom/client';
 // import './index.css'
 // import App from '../src/App.jsx'
 
@@ -10,20 +10,20 @@ const jsx = (
 );
 
 function App() {
-	// const [num, update] = useState(100)
-	// return (<ul onClick={() => update(50)}>
-	// 	{new Array(num).fill(0).map((_, i) => {
-	// 		return <Child key={i}>{i}</Child>
-	// 	})}
-	// </ul>
-	// );
-  return (
-<div>app</div>
-  )
+	const [count, setCount] = useState(1210);
+	return (
+		<div onClick={() => {
+			setCount(count => count + 1)
+			setCount(count => count + 1)
+			setCount(count => count + 1)
+		}}>
+			{count}
+		</div>
+	);
 }
 
 
-const root = ReactDOM.createRoot(document.getElementById('root')!)
-root.render(jsx);
-// root.render(<App />);
+const root = ReactDOM.createRoot(document.getElementById('root') as HTMLElement)
+// root.render(jsx);
+root.render(<App />);
 // window.root = root;

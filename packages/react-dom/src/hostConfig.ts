@@ -11,7 +11,7 @@ export type TextInstance = Text;
 export const createInstance = (type: string, props: any): Instance => {
 	// TODO 处理props
 	const element = document.createElement(type) as unknown;
-	updateFiberProps(element as DOMElement,props)
+	updateFiberProps(element as DOMElement, props)
 	return element as DOMElement
 };
 
@@ -31,7 +31,7 @@ export const appendChildToContainer = (child: Instance, parent: Container | Inst
 export const commitUpdate = (fiber: FiberNode) => {
 	switch (fiber.flags) {
 		case HostComponent:
-			updateFiberProps(fiber.stateNode,fiber.memoizedProps);
+			updateFiberProps(fiber.stateNode, fiber.memoizedProps);
 			break;
 		case HostText:
 			const text = fiber.memoizedProps.content
@@ -54,3 +54,5 @@ export const removeChild = (child: Instance | TextInstance, container: Container
 export const insertChildToContainer = (child: Instance, container: Container, before: Instance) => {
 	container.insertBefore(child, before)
 }
+
+export const scheduleMicroTask = typeof queueMicrotask === 'function' ? queueMicrotask : typeof Promise === 'function' ? (callback: (...args: any) => void) => Promise.resolve(null).then(callback) : setTimeout;
