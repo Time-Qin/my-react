@@ -2,6 +2,7 @@ import { Action } from 'shared/ReactTypes';
 import { Update } from './fiberFlags';
 import { Dispatch } from 'react/src/currentDispatcher';
 import { Lane } from './fiberLanes';
+import { Effect, FCUpdateQueue } from './fiberHooks';
 
 // 定义Update 数据结构
 export interface Update<State> {
@@ -34,6 +35,12 @@ export function createUpdateQueue<State>(): UpdateQueue<State> {
         },
         dispatch: null
     }
+}
+
+export function createFCUpdateQueue<State>(): FCUpdateQueue<State> {
+    const updateQueue = createUpdateQueue<State>() as FCUpdateQueue<State>;
+    updateQueue.lastEffect = null;
+    return updateQueue;
 }
 
 // 将Update 添加到 UpdateQueue 中
