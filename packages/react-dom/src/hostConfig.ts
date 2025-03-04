@@ -2,7 +2,7 @@ import { FiberNode } from "react-reconciler/src/fiber";
 import { HostComponent, HostText } from "react-reconciler/src/workTags";
 import { DOMElement, updateFiberProps } from "./SyntheticEvent";
 
-export type Container = Element | Document | DocumentFragment;;
+export type Container = Element;
 export type Instance = Element;
 export type TextInstance = Text;
 
